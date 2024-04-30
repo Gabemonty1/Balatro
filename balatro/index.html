@@ -1,0 +1,133 @@
+<html>
+<head>
+    <script type = "text/javascript" src="Card.js"></script>
+    <script type = "text/javascript" src="phaser.js"></script>
+    <script type = "text/javascript" src="Stats.js"></script>
+</head>
+<body>
+    <script>
+    let width = 0; //stores the screen size
+    let height = 0;
+    let middleW = 0;
+    let middleH = 0;
+
+    function jsUpdateSize() {
+        width = window.innerWidth * 2 ||
+            document.documentElement.clientWidth * 2 ||
+            document.body.clientWidth * 2;
+        height = window.innerHeight * 2 ||
+                document.documentElement.clientHeight * 2 ||
+                document.body.clientHeight * 2;
+        middleW = window.innerWidth
+        middleH = window.innerHeight
+    }
+    window.onload = jsUpdateSize;       // When the page first loads
+    window.onresize = jsUpdateSize;     // When the page is ever resized
+
+    let deck = buildDeck()
+    console.log(deck)
+
+    function switchScene(oldScene, newScene) {
+        oldScene.scene.start(newScene);
+    }
+
+    class TitleScene extends Phaser.Scene
+    {
+        preload ()
+        {
+            this.load.image('logo','assets/logo.png')
+            this.load.image('red', 'https://labs.phaser.io/assets/particles/red.png');
+            this.load.image('blue', 'https://labs.phaser.io/assets/particles/blue.png');
+
+        }
+        create ()
+        {
+
+            const particles = this.add.particles(0, 0, 'red', {
+                speed: 400,
+                scale: { start: 1, end: 0 },
+                blendMode: 'ADD'
+            });
+            const particles2 = this.add.particles(0, 0, 'blue', {
+                speed: 400,
+                scale: { start: 1, end: 0 },
+                blendMode: 'ADD'
+            });
+            const logo = this.add.image(middleW/2,middleH/3.5,'logo')
+            particles.startFollow(logo);
+            particles2.startFollow(logo);
+            
+            const Scene = this; //This is for changing the scene with the button, as using this in the function would send the button object
+            const startButton = this.add.text(middleW/2.25,middleH/1.4,'Start Game', { fill: '#ffffff', backgroundColor: '#1b4f29', fontSize:'40px'})
+                .setInteractive()
+                .on('pointerover', () => startButton.backgroundColor = '#0a2110')
+                .on('pointerdown', () => switchScene(Scene, "blind"))
+        }
+    }
+    class Blind extends Phaser.Scene
+    {
+        preload ()
+        {
+            const sidebar = this.add.rectangle(0, 0, width/6, height, 0x3c423f);
+            const jokers = this.add.rectangle(width/4.1,0,width/4,height/4, 0x245729)
+            const items = this.add.rectangle(width/2,0,width/5,height/4, 0x245729)
+
+            const neededScore = this.add.text(0+width/50,0+height/10, 'Score Needed\n' + getScore() + '\n\nScore:', {align: 'center'});
+            neededScore.setFontSize(24)
+            
+            const ante = this.add.text(0+width/50,0+height/2.5, 'Ante ' + getAnte(), {align: 'center'});
+            ante.setFontSize(24)
+
+
+            const hand = this.add.rectangle(width/3.5, height/2.25, width/3, height/6, 0x245729);
+            deck = shuffle(deck)
+        }
+        create ()
+        {
+
+        }
+    }
+    class Shop extends Phaser.Scene
+    {
+        preload() 
+        {
+
+        }
+        create()
+        {
+
+        }
+    }
+
+    const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        backgroundColor: "#29752f",
+        scene: TitleScene,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 200 }
+            }
+        },
+        dom: {
+            createContainer:true
+        },
+        scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+            width: window.innerWidth,
+            height: window.innerHeight
+        }
+    };
+
+    const game = new Phaser.Game(config);
+    game.scene.add("blind",Blind,false);
+    game.scene.add("shop",Shop,false);
+    //game.scene.add("deckView",deckView,false)
+    //game.scene.add("ANSView",ANSView,false)//Arcana and Spectal View
+    </script>
+
+</body>
+</html>
