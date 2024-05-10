@@ -3,9 +3,11 @@
     <script type = "text/javascript" src="Card.js"></script>
     <script type = "text/javascript" src="phaser.js"></script>
     <script type = "text/javascript" src="Stats.js"></script>
+    <script type = "text/javascript" src="CalculateScore.js"></script>
 </head>
 <body>
     <script>
+
     let width = 0; //stores the screen size
     let height = 0;
     let middleW = 0;
@@ -25,7 +27,20 @@
     window.onresize = jsUpdateSize;     // When the page is ever resized
 
     let deck = buildDeck()
-    console.log(deck)
+    let deckPosition = 0;
+    let hand = []
+    let selectedCards = 0;
+    console.log(parseInt("hi"))
+
+    function checkRemainingDeck() {
+        let undrawn = 0;
+        deck.forEach(element => {
+            if (element.getDrawn) {
+                undrawn++
+            }
+        });
+        return undrawn
+    }
 
     function switchScene(oldScene, newScene) {
         oldScene.scene.start(newScene);
@@ -68,23 +83,69 @@
     {
         preload ()
         {
+            deck = shuffle(deck)
+
+            hand = drawFromDeck(getHandSize(),this)
+            console.log(hand)
+        }
+
+        create ()
+        {
+            let score = 0;
             const sidebar = this.add.rectangle(0, 0, width/6, height, 0x3c423f);
             const jokers = this.add.rectangle(width/4.1,0,width/4,height/4, 0x245729)
             const items = this.add.rectangle(width/2,0,width/5,height/4, 0x245729)
 
-            const neededScore = this.add.text(0+width/50,0+height/10, 'Score Needed\n' + getScore() + '\n\nScore:', {align: 'center'});
+            const handArea = this.add.rectangle(width/3.5, height/2.25, width/3, height/6, 0x245729);
+
+            const neededScore = this.add.text(0+width/50,0+height/10, 'Score Needed\n' + getBaseScore() + '\n\nScore: 0', {align: 'center'});
             neededScore.setFontSize(24)
             
-            const ante = this.add.text(0+width/50,0+height/2.5, 'Ante ' + getAnte(), {align: 'center'});
+            const ante = this.add.text(0+width/60,0+height/2.5, 'Ante ' + getAnte(), {align: 'center'});
             ante.setFontSize(24)
+            const round = this.add.text(0+width/60,0+height/2.35, 'Round ' + getRound(), {align: 'center'});
+            round.setFontSize(24)
+            
+            const hands = this.add.text(0+width/65,0+height/3.5, 'Hands Remaining ' + getHands(), {align: 'center'});
+            hands.setFontSize(24)
+            const discards = this.add.text(0+width/150,0+height/3.25, 'Discards Remaining ' + getDiscards(), {align: 'center'});
+            discards.setFontSize(24)
+            
+            //displaying cards
+            const images = []
+            for (let i = 0; i < hand.length; i++) {
+                images[i] = this.add.image(width/6 + (i*100), height/2.25,hand[i].getName())
+                .setInteractive()
+                .on('pointerover', () => images[i].setPosition(images[i].x,images[i].y-10))
+                .on('pointerout', () => images[i].setPosition(images[i].x,images[i].y+10))
+                .on('pointerdown', () => {
+                    if ((hand[i].getSelected() == false) && (selectedCards < 5)) {
+                        images[i].setPosition(images[i].x,images[i].y-30)
+                        hand[i].changeSelected(true)
+                        selectedCards++
+                    } else {
+                        if (selectedCards < 5 || hand[i].getSelected() == true) {
+                            images[i].setPosition(images[i].x,images[i].y+30)
+                            hand[i].changeSelected(false)
+                            selectedCards--
+                        }
+                    }
+                })
+            }
+            //Cards are displayed
+            const playButton = this.add.text(middleW*.93,middleH*.75,'Play\nHand', { fill: '#ffffff', backgroundColor: '#1b4f29', fontSize:'40px', align: 'center'})
+                .setInteractive()
+                .on('pointerover', () => playButton.backgroundColor = '#0a2110')
+                .on('pointerdown', () => {
+                    score = calculateScore(hand,score)
+                    neededScore.text = 'Score Needed\n' + getBaseScore() + '\n\nScore: ' + String(score)
+                })
 
-
-            const hand = this.add.rectangle(width/3.5, height/2.25, width/3, height/6, 0x245729);
-            deck = shuffle(deck)
-        }
-        create ()
-        {
-
+            const discardButton = this.add.text(middleW*.915,middleH*.85,'Discard\nHand', { fill: '#ffffff', backgroundColor: '#1b4f29', fontSize:'40px', align: 'center'})
+                .setInteractive()
+                .on('pointerover', () => startButton.backgroundColor = '#0a2110')
+                .on('pointerdown', () => {
+                })
         }
     }
     class Shop extends Phaser.Scene

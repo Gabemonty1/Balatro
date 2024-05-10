@@ -4,7 +4,8 @@ baseScore = 300.0;
 handTypeLevelAndCount = []
 round = 1;
 money = 0;
-startingHands = 4;
+hands = 4;
+handSize = 9;
 discards = 3;
 
 function nextRound() {
@@ -15,11 +16,23 @@ function nextRound() {
     }
     round++;
 }
-function getScore() {
+function getBaseScore() {
     return baseScore
 }
 function getAnte() {
     return currentAnte
+}
+function getRound() {
+    return round
+}
+function getHands() {
+    return hands
+}
+function getDiscards() {
+    return discards
+}
+function getHandSize() {
+    return handSize
 }
 function anteUp() {
     currentAnte += 1;
